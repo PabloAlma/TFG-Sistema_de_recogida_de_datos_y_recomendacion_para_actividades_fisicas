@@ -8,16 +8,48 @@
 <body>
     <h2>Dashboard</h2>
     <p>Bienvenido, {{ session['user'] }}</p>
+    <!-- Formulario para subir archivos -->
     <form action="/dashboard" method="POST" enctype="multipart/form-data">
         <label for="excel_file">Subir archivo Excel:</label>
         <input type="file" id="excel_file" name="excel_file" accept=".xls,.xlsx" required>
         <br>
         <button type="submit">Subir y Procesar</button>
     </form>
-    {% if graph_url %}
-    <h3>Gráfica Generada</h3>
-    <img src="{{ graph_url }}" alt="Gráfica de Ritmo Cardiaco">
+
+    <!-- Formulario para seleccionar y procesar un archivo -->
+    <form action="/dashboard" method="POST">
+        <label for="file_name">Selecciona un archivo:</label>
+        <select name="file_name" id="file_name">
+            {% for archivo in archivos %}
+            <option value="{{ archivo }}">{{ archivo }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Generar Gráficas</button>
+    </form>
+    
+    <!-- Mostrar gráficas si existen -->
+    {% if graph_urls %}
+    <h3>Gráficas Generadas</h3>
+    <img src="{{ graph_urls['heart_rate'] }}" alt="Ritmo Cardiaco">
+    <img src="{{ graph_urls['rr_interval'] }}" alt="Variabilidad R-R">
     {% endif %}
+    
+
+    <!-- Lista de archivos subidos 
+    <h3>Archivos Subidos</h3>
+    {% if archivos %}
+        <ul>
+            {% for archivo in archivos %}
+                <li>
+                    <a href="{{ url_for('upload.download_file', filename=archivo) }}">{{ archivo }}</a>
+                    <!-- <button class="delete" data-filename="{{ archivo }}">Eliminar</button>--> <!-- Futura mejora-->
+                <!--</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No hay archivos subidos.</p>
+    {% endif %}-->
+
     <br>
     <a href="/logout">Cerrar Sesión</a>
     <script src="/static/script.js"></script>
