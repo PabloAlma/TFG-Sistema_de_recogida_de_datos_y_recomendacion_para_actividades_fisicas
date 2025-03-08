@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+</head>
+<body>
+    <h2>Dashboard</h2>
+    <p>Bienvenido, {{ session['user'] }}</p>
+    <form action="/dashboard" method="POST" enctype="multipart/form-data">
+        <label for="excel_file">Subir archivo Excel:</label>
+        <input type="file" id="excel_file" name="excel_file" accept=".xls,.xlsx" required>
+        <br>
+        <button type="submit">Subir y Procesar</button>
+    </form>
+    {% if graph_url %}
+    <h3>Gráfica Generada</h3>
+    <img src="{{ graph_url }}" alt="Gráfica de Ritmo Cardiaco">
+    {% endif %}
+    <br>
+    <a href="/logout">Cerrar Sesión</a>
+    <script src="/static/script.js"></script>
+</body>
+</html>
