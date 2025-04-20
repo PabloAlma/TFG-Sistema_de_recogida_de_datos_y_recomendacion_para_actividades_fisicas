@@ -4,16 +4,30 @@
     <meta charset="UTF-8">
     <title>Dashboard</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <style>
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .data-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
     <h2>Dashboard</h2>
-    <p>Bienvenido, {{ session['user'] }}</p>
+    <p>Bienvenido, {{ session['user']['username'] }}</p>
     <!-- Formulario para subir archivos -->
     <form action="/dashboard" method="POST" enctype="multipart/form-data">
         <label for="excel_file">Subir archivo Excel:</label>
         <input type="file" id="excel_file" name="excel_file" accept=".xls,.xlsx" required>
         <br>
-        <button type="submit">Subir y Procesar</button>
+        <button type="submit" name="upload_button">Subir y Procesar</button>
     </form>
 
     <!-- Formulario para seleccionar y procesar un archivo -->
@@ -24,34 +38,25 @@
             <option value="{{ archivo }}">{{ archivo }}</option>
             {% endfor %}
         </select>
-        <button type="submit">Generar Gráficas</button>
+        <button type="submit" name="generate_button">Generar Gráficas</button>
     </form>
     
     <!-- Mostrar gráficas si existen -->
     {% if graph_urls %}
-    <h3>Gráficas Generadas</h3>
-    <img src="{{ graph_urls['heart_rate'] }}" alt="Ritmo Cardiaco">
-    <img src="{{ graph_urls['rr_interval'] }}" alt="Variabilidad R-R">
-    {% endif %}
-    
-
-    <!-- Lista de archivos subidos 
-    <h3>Archivos Subidos</h3>
-    {% if archivos %}
-        <ul>
-            {% for archivo in archivos %}
-                <li>
-                    <a href="{{ url_for('upload.download_file', filename=archivo) }}">{{ archivo }}</a>
-                    <!-- <button class="delete" data-filename="{{ archivo }}">Eliminar</button>--> <!-- Futura mejora-->
-                <!--</li>
+    <div class="graphs-container">
+        <h3>Gráficas Generadas del archivo: {{ request.form.file_name.split('.')[0] }} </h3>
+        <div class="graph-grid">
+            {% for img in graph_urls %}
+            <div class="graph-item">
+                <img src="{{ graph_urls[img] }}" alt="Gráfica de análisis">
+            </div>
             {% endfor %}
-        </ul>
-    {% else %}
-        <p>No hay archivos subidos.</p>
-    {% endif %}-->
+        </div>
+    </div>
+    {% endif %}
 
     <br>
-    <a href="/logout">Cerrar Sesión</a>
+    <a href="/logout" class="logout-btn">Cerrar Sesión</a>
     <script src="/static/script.js"></script>
 </body>
 </html>

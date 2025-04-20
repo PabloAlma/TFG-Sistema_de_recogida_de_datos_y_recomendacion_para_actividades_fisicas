@@ -2,12 +2,22 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Login / Registro</title>
+    <title>Login</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <h2>Iniciar Sesión</h2>
     <form action="/login" method="POST">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category == 'MalosCredenciales' %}
+                        <div class="warning-message" role="alert"><i class="fas fa-exclamation-triangle"></i>{{ message }}</div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+        {% endwith %}
         <label for="username">Usuario:</label>
         <input type="text" id="username" name="username" required>
         <br>
@@ -16,5 +26,8 @@
         <br>
         <button type="submit">Entrar</button>
     </form>
+    <div class="auth-options">
+    <p>¿No tienes cuenta? <br><a href="{{ url_for('auth.register') }}" class="auth-toggle-btn btn-register">Registrarse</a></p>
+    </div>
 </body>
 </html>

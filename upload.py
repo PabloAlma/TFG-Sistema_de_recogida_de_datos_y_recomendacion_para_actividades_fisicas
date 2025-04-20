@@ -1,5 +1,6 @@
 import os
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, send_from_directory
+from werkzeug.utils import secure_filename
 from analysis import process_excel_file
 
 upload_blueprint = Blueprint('upload', __name__)
@@ -15,73 +16,39 @@ def allowed_file(filename):
     """Verifica si el archivo tiene una extensión permitida"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-""" @upload_blueprint.route('/dashboard', methods=['GET', 'POST'])
-def dashboard():
-    if 'user' not in session:
-        return redirect(url_for('auth.login'))
-    
-    graph_url = None  # Inicializamos la variable para evitar errores
-
-    if request.method == 'POST':
-        if 'excel_file' not in request.files:
-            flash('No se encontró el archivo')
-            return redirect(request.url)
-        file = request.files['excel_file']
-        if file.filename == '':
-            flash('No se seleccionó archivo')
-            return redirect(request.url)
-        filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-        file.save(filepath)
-
-        # Procesar el archivo Excel y generar la gráfica
-        graph_url = process_excel_file(filepath)
-
-    # Obtener la lista de archivos subidos
-    archivos = os.listdir(UPLOAD_FOLDER)
-
-    return render_template('dashboard.html', graph_url=graph_url, archivos=archivos) """
-
-def dashboard():
-    if 'user' not in session:
-        return redirect(url_for('auth.login'))
-
-    archivos = os.listdir(UPLOAD_FOLDER)  # Obtener lista de archivos subidos
-    graph_urls = {}
-
-    if request.method == 'POST':
-        if 'excel_file' in request.files:
-            file = request.files['excel_file']
-
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(UPLOAD_FOLDER, filename)
-                file.save(filepath)
-                flash("Archivo subido correctamente.")
-                return redirect(request.url)
-
-        file_name = request.form.get('file_name')  # Obtener el archivo seleccionado
-        if file_name and file_name in archivos:
-            filepath = os.path.join(UPLOAD_FOLDER, file_name)
-            graph_urls = process_excel_file(filepath)  # Procesar el archivo
-
-    return render_template('dashboard.html', archivos=archivos, graph_urls=graph_urls)
-
 @upload_blueprint.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     if 'user' not in session:
         return redirect(url_for('auth.login'))
+    user=session['user']['username']
+    # En caso de que no haya subido nada, creamos una carpeta asociada a su cuenta donde tendra sus archivos
+    user_folder = os.path.join(UPLOAD_FOLDER, user)
+    if not os.path.exists(user_folder):
+        os.makedirs(user_folder)
 
-    archivos = os.listdir(UPLOAD_FOLDER)  # Obtener lista de archivos subidos
+    archivos = os.listdir(user_folder)  # Obtener lista de archivos subidos
     graph_urls = {}
 
     if request.method == 'POST':
-        file_name = request.form.get('file_name')  # Obtener el archivo seleccionado
-        if not file_name or file_name not in archivos:
-            flash("Selecciona un archivo válido.")
-            return redirect(request.url)
+        if 'upload_button' in request.form:
+            if 'excel_file' in request.files:
+                file = request.files['excel_file']
 
-        filepath = os.path.join(UPLOAD_FOLDER, file_name)
-        graph_urls = process_excel_file(filepath)  # Procesar el archivo
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(file.filename)
+                    filepath = os.path.join(user_folder, filename)
+                    file.save(filepath)
+                    flash("Archivo subido correctamente.")
+                    return redirect(request.url)
+        elif 'generate_button' in request.form:  # Botón de generar
+            file_name = request.form.get('file_name')  # Obtener el archivo seleccionado
+            if not file_name or file_name not in archivos:
+                flash("Selecciona un archivo válido.")
+                return redirect(request.url)
+
+            filepath = os.path.join(user_folder, file_name)
+            
+            graph_urls = process_excel_file(filepath, user)  # Procesar el archivo
 
     return render_template('dashboard.html', archivos=archivos, graph_urls=graph_urls)
 
