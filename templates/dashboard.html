@@ -23,7 +23,7 @@
     <h2>Dashboard</h2>
     <p>Bienvenido, {{ session['user']['username'] }}</p>
     <!-- Formulario para subir archivos -->
-    <form action="/dashboard" method="POST" enctype="multipart/form-data">
+    <form action="{{ url_for('upload.dashboard') }}" method="POST" enctype="multipart/form-data">
         <label for="excel_file">Subir archivo Excel:</label>
         <input type="file" id="excel_file" name="excel_file" accept=".xls,.xlsx" required>
         <br>
@@ -31,7 +31,7 @@
     </form>
 
     <!-- Formulario para seleccionar y procesar un archivo -->
-    <form action="/dashboard" method="POST">
+    <form action="{{ url_for('upload.dashboard') }}" method="POST">
         <label for="file_name">Selecciona un archivo:</label>
         <select name="file_name" id="file_name">
             {% for archivo in archivos %}
@@ -56,7 +56,7 @@
     {% endif %}
 
     <br>
-    <a href="/logout" class="logout-btn">Cerrar Sesión</a>
+    <a href="{{ url_for('cerrar_sesion') }}" class="logout-btn">Cerrar Sesión</a>
     <script src="/static/script.js"></script>
 </body>
 </html>

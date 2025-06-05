@@ -10,7 +10,7 @@ TIEMPO = "TIEMPO"
 BPM = "BPM"
 RR = "RR"
 # Carpeta donde se guardan las gráficas
-STATIC_FOLDER = 'static'
+STATIC_FOLDER = '/static'
 if not os.path.exists(STATIC_FOLDER):
     os.makedirs(STATIC_FOLDER)
 

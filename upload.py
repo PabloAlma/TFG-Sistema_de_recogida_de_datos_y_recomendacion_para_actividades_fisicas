@@ -19,8 +19,8 @@ def allowed_file(filename):
 @upload_blueprint.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     if 'user' not in session:
-        return redirect(url_for('auth.login'))
-    user=session['user']['username']
+        return redirect(url_for('index'))  # ¡Usa 'index', no 'oidc_auth.login'!
+    user = session['user']['username']
     # En caso de que no haya subido nada, creamos una carpeta asociada a su cuenta donde tendra sus archivos
     user_folder = os.path.join(UPLOAD_FOLDER, user)
     if not os.path.exists(user_folder):
@@ -33,7 +33,7 @@ def dashboard():
         if 'upload_button' in request.form:
             if 'excel_file' in request.files:
                 file = request.files['excel_file']
-
+                print("Archivo recibido:", file)  # Debug
                 if file and allowed_file(file.filename):
                     filename = secure_filename(file.filename)
                     filepath = os.path.join(user_folder, filename)
