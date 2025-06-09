@@ -9,3 +9,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+document.getElementById('toggle-bg-switch').addEventListener('change', function() {
+    const modoText = document.getElementById('modo');
+    modoText.textContent = this.checked ? 'Modo Claro' : 'Modo Oscuro';
+    document.body.classList.toggle('light-mode');
+    document.querySelectorAll('form').forEach(form => {
+        form.classList.toggle('light-mode');
+    });
+    modoText.classList.toggle('light-mode');
+});

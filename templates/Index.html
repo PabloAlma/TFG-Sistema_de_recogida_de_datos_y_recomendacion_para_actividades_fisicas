@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <title>AppHeartRateTFG</title>
+</head>
+<body>
+    <div class="switch-container">
+        <p class="switchtext" id="modo">Modo Oscuro</p>
+        <label class="switch">
+            <input type="checkbox" id="toggle-bg-switch">
+            <span class="slider"></span>
+        </label>
+    </div>
+    <div class="circles">
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </div>
+
+    <div class="container">
+        <h1 class="title">AppHeartRateTFG</h1>
+        <p style="color: #7f8c8d; margin-bottom: 30px;">Sistema de monitorización cardíaca avanzada</p>
+        
+        <div class="buttons">
+            <a href="{{ url_for('iniciar_sesion') }}" class="auth-toggle-btn btn-login">Iniciar Sesión</a>
+            <a href="{{ url_for('registro') }}" class="auth-toggle-btn btn-register">Registrarse</a>
+        </div>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>

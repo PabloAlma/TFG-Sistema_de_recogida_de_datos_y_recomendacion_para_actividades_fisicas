@@ -4,13 +4,17 @@ matplotlib.use('Agg')  # Usar un backend no interactivo
 import matplotlib.pyplot as plt
 import os
 import numpy as np
+from scipy.signal import welch, periodogram
+from scipy.stats import linregress
+import nolds  # Para DFA (instala con: pip install nolds)
+from sklearn.metrics import pairwise_distances  # Para gráfica de recurrencia
 
 # Nombres de las columnas
 TIEMPO = "TIEMPO"
 BPM = "BPM"
 RR = "RR"
 # Carpeta donde se guardan las gráficas
-STATIC_FOLDER = '/static'
+STATIC_FOLDER = 'static'
 if not os.path.exists(STATIC_FOLDER):
     os.makedirs(STATIC_FOLDER)
 
@@ -30,6 +34,10 @@ def process_excel_file(filepath, user_id):
     grafRR = os.path.join(fic_folder, "RRVSTIME.png")
     histRR = os.path.join(fic_folder, "histograma_RR.png")
     grafRRvsBPM = os.path.join(fic_folder, "RR_vs_BPM.png")
+    fftPlot = os.path.join(fic_folder, "fft_spectrum.png")
+    dfaplot = os.path.join(fic_folder, "dfa_plot.png")
+    poincarePlot = os.path.join(fic_folder, "poincare_plot.png")
+    recurrencePlot = os.path.join(fic_folder, "recurrence_plot.png")
 
     #Leer el archivo Excel
     try:
@@ -122,5 +130,124 @@ def process_excel_file(filepath, user_id):
     else:
         graph_path = grafRRvsBPM
     graph_urls["RR_vs_BPM"] = graph_path
+
+    # Espectro de Potencia (FFT)
+    if not os.path.exists(fftPlot):
+        fs = 1.0 / np.mean(np.diff(df["time"]))  # Frecuencia de muestreo
+        f, Pxx = welch(df[RR], fs=fs, nperseg=min(256, len(df[RR])))
+        plt.figure(figsize=(10, 5))
+        plt.semilogy(f, Pxx, color='purple')
+        plt.xlabel('Frecuencia (Hz)'); plt.ylabel('Densidad espectral (ms²/Hz)')
+        plt.title('Espectro de Potencia (FFT)')
+        plt.grid(True)
+        # Resaltar bandas VLF, LF, HF
+        plt.axvspan(0.003, 0.04, color='gray', alpha=0.2, label='VLF')
+        plt.axvspan(0.04, 0.15, color='blue', alpha=0.2, label='LF')
+        plt.axvspan(0.15, 0.4, color='red', alpha=0.2, label='HF')
+        plt.legend()
+        graph_path = fftPlot
+        plt.savefig(graph_path)
+        plt.close()
+    else:
+        graph_path = fftPlot
+    graph_urls["fft_spectrum"] = graph_path
+
+    # Análisis DFA
+    print(len(df[RR]))
+    if not os.path.exists(dfaplot) and len(df[RR]) > 100:  # Requiere suficiente datos
+        try:
+            rr_intervals = df[RR].values
+            y = np.cumsum(rr_intervals - np.mean(rr_intervals))  # Serie acumulativa de RR
+            min_scale = 4 # Escala mínima para DFA
+            max_scale = len(rr_intervals) // 4  # Escala máxima (1/4 de la longitud de la serie)
+            scales = np.unique(np.logspace(np.log10(min_scale), np.log10(max_scale), num=20, dtype=int))
+            fluctuations = []
+
+            for scale in scales:
+                block = len(y) // scale
+                if block < 2:
+                    continue # Evitar bloques demasiado pequeños
+                y_block = np.reshape(y[:block * scale], (block, scale))
+
+                rms = []
+                for b in y_block:
+                   x = np.arange(scale)
+                   c = np.polyfit(x, b, 1)
+                   t = np.polyval(c, x)
+
+                   rms.append(np.sqrt(np.mean((b - t) ** 2)))
+                
+                fluctuations.append(np.mean(rms))
+
+
+            alpha = nolds.dfa(rr_intervals)
+
+
+            log_scales = np.log10(scales[:len(fluctuations)])  # Escalas logarítmicas
+            log_fluctuations = np.log10(fluctuations)
+
+            slope, intercept, _, _, _ = linregress(log_scales, log_fluctuations)
+            
+            # Crear la gráfica
+            plt.figure(figsize=(10, 6))
+            plt.scatter(log_scales, log_fluctuations, color='blue', label='Datos')
+            plt.plot(log_scales, intercept + slope * log_scales, 'r--', 
+                 label=f'DFA α = {alpha:.2f} (Ajuste lineal)')
+            plt.xlabel('log(Escala)')
+            plt.ylabel('log(Fluctuación RMS)')
+            plt.title(f'Análisis DFA de HRV - Exponente α: {alpha:.2f}')
+            plt.legend()
+            plt.grid(True)
+            graph_path = dfaplot
+            plt.savefig(graph_path)
+            plt.close()
+        except Exception as e:
+            print(f"Error en DFA: {e}")
+    elif os.path.exists(dfaplot):
+        graph_path = dfaplot
+    else:
+        dfaplot = None
+    if dfaplot:
+        graph_urls["dfa_plot"] = graph_path
+
+    # Gráfica de Poincaré
+    if not os.path.exists(poincarePlot):
+        rr_n = df[RR].iloc[:-1].values
+        rr_n1 = df[RR].iloc[1:].values
+        plt.figure(figsize=(8, 8))
+        plt.scatter(rr_n, rr_n1, color='green', alpha=0.5)
+        plt.xlabel('RRₙ (ms)'); plt.ylabel('RRₙ₊₁ (ms)')
+        plt.title('Gráfica de Poincaré')
+        
+        # Calcular SD1 y SD2
+        sd1 = np.std(rr_n1 - rr_n) / np.sqrt(2)
+        sd2 = np.std(rr_n1 + rr_n) / np.sqrt(2)
+        plt.gca().annotate(f'SD1: {sd1:.2f} ms\nSD2: {sd2:.2f} ms', 
+                          xy=(0.7, 0.1), xycoords='axes fraction')
+        plt.grid(True)
+        graph_path = poincarePlot
+        plt.savefig(graph_path)
+        plt.close()
+    else:
+        graph_path = poincarePlot
+    graph_urls["poincare_plot"] = graph_path
+
+    # Gráfica de Recurrencia
+    if not os.path.exists(recurrencePlot):
+        try:
+            # Matriz de distancias (ejemplo simplificado)
+            distance_matrix = pairwise_distances(df[[RR]].values)
+            plt.figure(figsize=(8, 8))
+            plt.imshow(distance_matrix < np.median(distance_matrix), cmap='binary', origin='lower')
+            plt.title('Gráfica de Recurrencia')
+            plt.xlabel('Índice'); plt.ylabel('Índice')
+            graph_path = recurrencePlot
+            plt.savefig(graph_path)
+            plt.close()
+        except Exception as e:
+            print(f"Error en gráfica de recurrencia: {e}")
+    else:
+        graph_path = recurrencePlot
+    graph_urls["recurrence_plot"] = graph_path
 
     return graph_urls

@@ -20,41 +20,140 @@
     </style>
 </head>
 <body>
-    <h2>Dashboard</h2>
-    <p>Bienvenido, {{ session['user']['username'] }}</p>
-    <!-- Formulario para subir archivos -->
-    <form action="{{ url_for('upload.dashboard') }}" method="POST" enctype="multipart/form-data">
-        <label for="excel_file">Subir archivo Excel:</label>
-        <input type="file" id="excel_file" name="excel_file" accept=".xls,.xlsx" required>
-        <br>
-        <button type="submit" name="upload_button">Subir y Procesar</button>
-    </form>
-
-    <!-- Formulario para seleccionar y procesar un archivo -->
-    <form action="{{ url_for('upload.dashboard') }}" method="POST">
-        <label for="file_name">Selecciona un archivo:</label>
-        <select name="file_name" id="file_name">
-            {% for archivo in archivos %}
-            <option value="{{ archivo }}">{{ archivo }}</option>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flashes">
+            {% for message in messages %}
+                <li>{{ message }}</li>
             {% endfor %}
-        </select>
-        <button type="submit" name="generate_button">Generar Gráficas</button>
-    </form>
-    
-    <!-- Mostrar gráficas si existen -->
-    {% if graph_urls %}
-    <div class="graphs-container">
-        <h3>Gráficas Generadas del archivo: {{ request.form.file_name.split('.')[0] }} </h3>
-        <div class="graph-grid">
-            {% for img in graph_urls %}
-            <div class="graph-item">
-                <img src="{{ graph_urls[img] }}" alt="Gráfica de análisis">
-            </div>
-            {% endfor %}
-        </div>
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <div class="switch-container">
+        <p class="switchtext" id="modo">Modo Oscuro</p>
+        <label class="switch">
+            <input type="checkbox" id="toggle-bg-switch">
+            <span class="slider"></span>
+        </label>
     </div>
-    {% endif %}
 
+    <div class="circles">
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </div>
+    <h2>Bienvenido, {{ session['user']['username'] }}</h2>
+    {% if session['roles'] == 'Usuario' %}
+        <!-- Formulario para subir archivos -->
+        <form action="{{ url_for('upload.dashboard') }}" method="POST" enctype="multipart/form-data">
+            <label for="excel_file">Subir archivo Excel:</label>
+            <input type="file" id="excel_file" name="excel_file" accept=".xls,.xlsx" required>
+            <br>
+            <button type="submit" name="upload_button">Subir y Procesar</button>
+        </form>
+
+        <!-- Formulario para seleccionar y procesar un archivo -->
+        <form action="{{ url_for('upload.dashboard') }}" method="POST">
+            <label for="file_name">Selecciona un archivo:</label>
+            <select name="file_name" id="file_name">
+                {% for archivo in archivos %}
+                <option value="{{ archivo }}">{{ archivo }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" name="generate_button">Generar Gráficas</button>
+        </form>
+        
+        <!-- Mostrar gráficas si existen -->
+        {% if graph_urls %}
+        <div class="graphs-container">
+            <h3>Gráficas Generadas del archivo: {{ request.form.file_name.split('.')[0] }} </h3>
+            <div class="graph-grid">
+                {% for img in graph_urls %}
+                <div class="graph-item">
+                    <img src="\{{ graph_urls[img] }}" alt="Gráfica de análisis">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Parte que se ve solo con usuarios administradores-->
+    {% elif session['roles'] == 'Administrador' %}
+        <h3>Panel de Administración</h3>
+        <p>Acciones administrativas disponibles:</p>
+            <form action="{{ url_for('upload.dashboard') }}" method="POST">
+                <button type="submit" name="seleccion_usuario">Ver usuarios</button>
+            
+            {% if usuarios%}
+                    <label for="user_principal">Selecciona un usuario:</label>
+                    <select name="user_principal" id="user_principal">
+                        {% for u in usuarios %}
+                        <option value="{{ u }}" {% if u == usuario1 %}selected{% endif %}>{{ u }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="file_name">Selecciona un archivo:</label>
+                    <select name="archivo_Compa_1" id="archivo_Compa_1">
+                        {% for archivo in archivos %}
+                        <option value="{{ archivo }}">{{ archivo }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" name="seleccion_usuario2">Comparar con otro usuario</button>
+                    <button type="submit" name="comparar_consigoMismo">Comparar con otro archivo</button>
+                    
+
+                {% if usuarios2%}
+                        <label for="user">Selecciona un usuario:</label>
+                        <select name="user2" id="user2">
+                            {% for u in usuarios2 %}
+                            <option value="{{ u }}" {% if u == usuario2 %}selected{% endif %}>{{ u }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="file_name">Selecciona un archivo:</label>
+                        <select name="archivo_Compa_2" id="archivo_Compa_2">
+                            {% for archivo in archivos2 %}
+                            <option value="{{ archivo }}">{{ archivo }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" name="cambio">Cambiar selección</button>
+                        <button type="submit" name="comparar_usuario">Comparar</button>
+
+                        {% if graph_urls and graph_urls2 %}
+                            <div class="graphs-container">
+                                <h3>Gráficas Generadas del archivo: {{ request.form.archivo_Compa_1.split('.')[0] }} y {{ request.form.archivo_Compa_2.split('.')[0] }}</h3>
+                                <div class="graph-grid">
+                                    <div class="graph-item">
+                                        <h4>Gráfica de {{ usuario1 }}</h4>
+                                    </div>
+                                    <div class="graph-item">
+                                        <h4>Gráfica de {{ usuario2 }}</h4>
+                                    </div>
+                                    {% for img1, img2 in zip(graph_urls, graph_urls2) %}
+                                    <div class="graph-item">
+                                        <img src="\{{ graph_urls[img1] }}" alt="Gráfica de análisis">
+                                    </div>
+                                    <div class="graph-item">
+                                        <img src="\{{ graph_urls2[img2] }}" alt="Gráfica de análisis">
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                {%endif%}
+            
+            {% endif %}
+            </form>
+            
+    {% else %}
+        <p>No tienes permisos para acceder a esta sección.</p>
+        
+    {%endif %}
     <br>
     <a href="{{ url_for('cerrar_sesion') }}" class="logout-btn">Cerrar Sesión</a>
     <script src="/static/script.js"></script>
