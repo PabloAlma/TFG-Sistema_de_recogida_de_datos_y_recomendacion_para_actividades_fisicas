@@ -125,6 +125,7 @@
                         <button type="submit" name="comparar_usuario">Comparar</button>
 
                         {% if graph_urls and graph_urls2 %}
+            </form>
                             <div class="graphs-container">
                                 <h3>Gráficas Generadas del archivo: {{ request.form.archivo_Compa_1.split('.')[0] }} y {{ request.form.archivo_Compa_2.split('.')[0] }}</h3>
                                 <div class="graph-grid">
@@ -144,7 +145,12 @@
                                     {% endfor %}
                                 </div>
                             </div>
+                        {% else %}
+                        </form>
                         {% endif %}
+            
+                    {% else %}
+                    </form>
                 {%endif%}
             
             {% endif %}
