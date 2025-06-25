@@ -26,7 +26,7 @@ body {
     width: 100vw;
     height: 100vh;
     background: transparent;
-    pointer-events: none; /* Opcional: para que no bloquee clics */
+    pointer-events: none; 
     z-index: 9999;
 }
 
@@ -260,6 +260,11 @@ button:hover {
 
 .btn-login:active {
     transform: translateY(0);
+}
+
+.alert-custom {
+  background-color: #222;
+  color: #fff;
 }
 
 .auth-toggle-btn::after {
