@@ -254,7 +254,7 @@ def process_excel_file(filepath, user_id):
     poincarePlot = os.path.join(fic_folder, "poincare_plot.png")
 
     #Leer el archivo Excel
-    df = read_excel(filepath, header=None, names=[TIEMPO, BPM, RR])
+    df = read_excel(filepath)
     # Procesar el archivo Excel y generar gráficas
     graph_urls = {}
     # Verificar si el DataFrame tiene las columnas necesarias
