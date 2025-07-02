@@ -330,4 +330,19 @@ def process_excel_file(filepath, user_id):
         graph_path = poincarePlot
     graph_urls["poincare_plot"] = graph_path
 
+    # Sacamos valores maximos y mínimos de BPM y RR y medios
+    bpm_max = df[BPM].max()
+    bpm_min = df[BPM].min()
+    bpm_mean = df[BPM].mean()
+    rr_max = df[RR].max()
+    rr_min = df[RR].min()
+    rr_mean = df[RR].mean()
+    # Guardamos los valores en graph_urls
+    graph_urls["bpm_max"] = bpm_max
+    graph_urls["bpm_min"] = bpm_min 
+    graph_urls["bpm_mean"] = bpm_mean
+    graph_urls["rr_max"] = rr_max
+    graph_urls["rr_min"] = rr_min
+    graph_urls["rr_mean"] = rr_mean
+
     return graph_urls

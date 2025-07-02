@@ -61,6 +61,89 @@
     </div>
     <h2>Bienvenido, {{ session['user']['username'] }}</h2>
     {% if session['roles'] == 'Usuario' %}
+        <!-- Solo deben de aparecer si hay informacion de las graficas-->
+         {% if graph_urls %}
+        <!-- Botón para abrir el modal RR-->
+        <div class="position-absolute top-0" style="right: 200px; margin-top: 10px;">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#customModalRR">
+                RR
+            </button>
+        </div>
+
+        <!-- Modal RR-->
+        <div class="modal fade" id="customModalRR" tabindex="-1" aria-labelledby="customModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-dark" id="customModalLabel">Información</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body text-dark">
+                    El valor del intervalo RR va desde {{graph_urls['rr_min']}} hasta {{graph_urls['rr_max']}} con un promedio de {{graph_urls['rr_mean']}}.
+                    <br>
+                    <h2>Intervalo RR por tipo de persona</h2>
+                    <ul>
+                        <li><strong>Adultos sanos (población general):</strong> RR ≈ 833 ms</li>
+                        <li><strong>Deportistas amateurs:</strong> RR 750–1000 ms (media ≈ 857 ms)</li>
+                        <li><strong>Personas no entrenadas:</strong> RR 552–1511 ms (media ≈ 916 ms)</li>
+                    </ul>
+                    <h2>Intervalo RR realizando actividad fisica moderada por tipo de persona</h2>
+                    <ul>
+                        <li><strong>Adultos sanos (población general):</strong> RR ≈ 451–631 ms (media ≈ 526 ms)</li>
+                        <li><strong>Deportistas amateurs:</strong> RR ≈ 462–667 ms (media ≈ 545 ms)</li>
+                        <li><strong>Personas no entrenadas:</strong> RR ≈ 429–600 ms (media ≈ 500 ms)</li>
+                    </ul>
+                    <br>
+                    Estas recomendaciones tienen un carácter exclusivamente orientativo. Ante cualquier sospecha de anomalía, se recomienda consultar a un profesional sanitario.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón para abrir el modal BPM-->
+        <div class="position-absolute top-0" style="right: 270px; margin-top: 10px;">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#customModalBPM">
+                BPM
+            </button>
+        </div>
+
+        <!-- Modal RR-->
+        <div class="modal fade" id="customModalBPM" tabindex="-1" aria-labelledby="customModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-dark" id="customModalLabel">Información</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body text-dark">
+                    El valor del BPM va desde {{graph_urls['bpm_min']}} hasta {{graph_urls['bpm_max']}} con un promedio de {{graph_urls['bpm_mean']}}.
+                    <br>
+                    <h2>Frecuencia cardíaca en reposo por tipo de persona</h2>
+                    <ul>
+                        <li><strong>Adultos sanos (población general):</strong> La frecuencia cardíaca en reposo promedio es de aproximadamente 72 latidos por minuto</li>
+                        <li><strong>Deportistas amateurs:</strong> En reposo suelen registrar entre 60 y 80 lpm</li>
+                        <li><strong>Personas no entrenadas:</strong> Estudios señalan un rango típico de ~39.7 a 108.6 lpm (media ≈65.5 lpm)</li>
+                    </ul>
+
+                    <h2>Frecuencia cardíaca realizando actividad fisica moderada por tipo de persona</h2>
+                    <ul>
+                        <li><strong>Adultos sanos (población general):</strong> La frecuencia cardíaca realizando actividad fisica moderada promedio es de aproximadamente 114 latidos por minuto</li>
+                        <li><strong>Deportistas amateurs:</strong> realizando actividad fisica moderada suelen registrar 110 lpm</li>
+                        <li><strong>Personas no entrenadas:</strong> Estudios señalan un rango típico de 120lmp</li>
+                    </ul>
+                    <br>
+                    Estas recomendaciones tienen un carácter exclusivamente orientativo. Ante cualquier sospecha de anomalía, se recomienda consultar a un profesional sanitario.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
         <!-- Formulario para subir archivos -->
         <form action="{{ url_for('upload.dashboard') }}" method="POST" enctype="multipart/form-data">
             <label for="excel_file">Subir archivo Excel:</label>
@@ -83,21 +166,19 @@
         <!-- Mostrar gráficas si existen -->
         {% if graph_urls %}
         <div class="graphs-container">
-            <h3>Gráficas Generadas del archivo: {{ request.form.file_name.split('.')[0] }} </h3>
-            <div class="graph-grid">
-                {% for img in graph_urls %}
-                <div class="graph-item">
-                    <img src="\{{ graph_urls[img] }}" alt="Gráfica de análisis">
+            <h3>Gráficas Generadas del archivo: {{ request.form.file_name.split('.')[0] }}</h3>
+                <div class="graph-grid">
+                    {% for img in graph_urls %}
+                    <div class="graph-item">
+                        <img src="\{{ graph_urls[img] }}" alt="Gráfica de análisis">
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-            </div>
         </div>
         <form action="{{ url_for('upload.dashboard') }}" method="POST">
             <button type="submit" name="download_button">Descargar Gráficas</button>
         </form>
         {% endif %}
-
-        <!-- TODO: (Mejor que comentar) Poner texto que indique algo relacionado con interpretaciones bibliograficas -->
 
 
         <!-- Parte que se ve solo con usuarios administradores-->
@@ -179,7 +260,7 @@
     {%endif %}
     <br>
     <a href="{{ url_for('cerrar_sesion') }}" class="logout-btn">Cerrar Sesión</a>
-    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/static/script.js"></script>
 </body>
 </html>

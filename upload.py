@@ -29,6 +29,23 @@ graph_urls2 = {}    # Diccionario con URLs de gráficas del usuario secundario
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
+def cerrar():
+    """
+    Limpia las variables globales y la sesión del usuario.
+    Esta función se utiliza para reiniciar el estado del dashboard y limpiar las listas de usuarios,
+    así como las URLs de gráficas generadas.
+    Variables globales afectadas:
+        usuarios, usuarios2: listas de usuarios para comparación.
+        usuario1, usuario2: usuarios seleccionados.
+        graph_urls, graph_urls2: diccionarios con rutas a las gráficas generadas.
+    """
+    global usuarios, usuarios2, usuario1, graph_urls, graph_urls2
+    usuarios.clear()  # Limpia la lista de usuarios
+    usuarios2.clear()  # Limpia la lista de usuarios secundarios
+    usuario1 = ""
+    graph_urls.clear()  # Limpia las URLs de gráficas
+    graph_urls2.clear()  # Limpia las URLs de gráficas secundarias
+
 def allowed_file(filename):
     """
     Verifica si el archivo tiene una extensión permitida (.xls o .xlsx).
@@ -63,6 +80,8 @@ def dashboard():
         dashboard.html con todos los elementos necesarios según el contexto del usuario.
     """
     global usuarios, usuarios2, usuario1, archivos, archivos2, usuario2, graph_urls, graph_urls2
+
+    print("upload", graph_urls)
     
     # Redirige si el usuario no está autenticado
     if 'user' not in session:
@@ -80,7 +99,7 @@ def dashboard():
         archivos = os.listdir(user_folder)
 
     # Procesamiento de formularios
-    # TODO: Extraer cada caso a funciones auxiliares para mantenimiento
+
     if request.method == 'POST':
         # Subida de archivo Excel
         if 'upload_button' in request.form:

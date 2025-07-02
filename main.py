@@ -1,7 +1,7 @@
 # Importaciones necesarias de Flask y otros módulos
 from flask import Flask, redirect, url_for, render_template, session, Blueprint
 # Importación de elementos desde el módulo upload
-from upload import upload_blueprint, usuarios, usuarios2, usuario1, graph_urls, graph_urls2
+from upload import upload_blueprint, cerrar
 # OpenIDConnect para la autenticación mediante OIDC ( Keycloak)
 from flask_oidc import OpenIDConnect
 # Librería JWT para decodificar tokens (sin verificar firma en este caso)
@@ -39,6 +39,7 @@ def inicio():
 # Ruta para redirigir al usuario a la página de registro de Keycloak
 @app.route("/registro")
 def registro():
+    
     registration_url = (
         f"{oidc.client_secrets['issuer']}/protocol/openid-connect/registrations?"
         f"client_id={oidc.client_secrets['client_id']}&"
@@ -91,6 +92,7 @@ def iniciar_sesion():
 # Ruta para cerrar sesión (logout)
 @app.route("/cerrar_sesion")
 def cerrar_sesion():
+    global usuarios, usuarios2, usuario1, graph_urls, graph_urls2, session
     if 'id_token' not in session:  # Si no hay ID Token, no hay sesión que cerrar
         session.clear()
         return redirect(url_for('inicio'))
@@ -103,12 +105,10 @@ def cerrar_sesion():
         f"id_token_hint={session['id_token']}"
     )
     # Limpieza de sesión local y estructuras de datos auxiliares
+    
     session.clear()  # Limpia la sesión de Flask
-    usuarios.clear()  # Limpia la lista de usuarios
-    usuarios2.clear()  # Limpia la lista de usuarios secundarios
-    usuario1 = ""
-    graph_urls.clear()  # Limpia las URLs de gráficas
-    graph_urls2.clear()  # Limpia las URLs de gráficas secundarias
+    cerrar()
+    
 
     return redirect(logout_url)  # Redirige a Keycloak para logout global
 
